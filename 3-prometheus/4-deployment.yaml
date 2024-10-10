@@ -1,0 +1,47 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: production
+  namespace: monitoring
+spec:
+  image: quay.io/prometheus/prometheus:v2.54.1
+  version: v2.54.1
+  alerting:
+    alertmanagers:
+    - namespace: monitoring
+      name: alertmanager-operated
+      port: web
+  serviceMonitorSelector:
+    matchLabels:
+      team: observability
+  ruleSelector:
+    matchLabels:
+      team: observability
+  serviceAccountName: prometheus
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 2Gi
+  enableAdminAPI: false
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: false
+    runAsUser: 1000
+  replicas: 1
+  logLevel: info
+  logFormat: logfmt
+  retention: 6h
+  scrapeInterval: 15s
